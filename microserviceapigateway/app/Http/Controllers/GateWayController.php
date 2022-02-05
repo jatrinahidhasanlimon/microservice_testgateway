@@ -5,30 +5,62 @@ declare(strict_types = 1);
 namespace App\Http\Controllers;
 
 use App\Services\ProductService;
+use App\Services\OrderService;
 use App\Services\NodeProductService;
 use Illuminate\Http\Request;
 
-class ProductController extends Controller
+class GateWayController extends Controller
 {
 
     private $productService;
+    protected $orderService;
     private $nodeProductService;
-
     /**
      * ProductController constructor.
      *
      * @param \App\Services\ProductService $productService
      */
-    public function __construct(ProductService $productService,NodeProductService $nodeProductService)
+    public function __construct(ProductService $productService, OrderService $orderService, NodeProductService $nodeProductService)
     {
         $this->productService = $productService;
+        $this->orderService = $orderService;
         $this->nodeProductService = $nodeProductService;
     }
-
-   
      public function index(Request $request)
+    { 
+        $base_url = url();
+        $url = array();
+        $url = explode($base_url,$request->url());
+        $path = $request->getPathInfo();
+        if (strpos($path, '/api/node') !== false) {
+            // dd('node api');
+            return $this->successResponse($this->nodeProductService->Fetch($request));
+        }
+        else if (strpos($path, '/api/product') !== false)
+        {
+            // dd('product api');
+            return $this->successResponse($this->productService->customFetch($request));
+
+        }
+        else if (strpos($path, '/api/order') !== false)
+        {
+            // dd('order api');
+            return $this->successResponse($this->orderService->customFetch($request));
+
+        }
+        else 
+        {
+            
+            return response()->json(
+            [
+                'message' => 'Related Service Not Found',   
+            ],400
+            );
+        }
+       
+    }
+     public function index_back(Request $request)
     {
-        // dd('here');
         // dd($request->method());
         // dd($request->server);
         // dd(route());
@@ -45,7 +77,8 @@ class ProductController extends Controller
         // dd($url);
         $path = $request->getPathInfo();
         // $path = "hey /node/";
-        // dd($path);
+        dd($base_url);
+        dd($path);
         if (strpos($path, '/node/') !== false) {
         //    return 'matched';
         // dd($this->nodeProductService);
@@ -63,44 +96,5 @@ class ProductController extends Controller
         return $this->successResponse($this->productService->customFetch($request));
     }
 
-    /**
-     * @param $product
-     *
-     * @return mixed
-     */
-    public function show($product)
-    {
-        return $this->successResponse($this->productService->fetchProduct($product));
-    }
-
-    /**
-     * @param \Illuminate\Http\Request $request
-     *
-     * @return mixed
-     */
-    public function store(Request $request)
-    {
-        return $this->successResponse($this->productService->createProduct($request->all()));
-    }
-
-    /**
-     * @param \Illuminate\Http\Request $request
-     * @param                          $product
-     *
-     * @return mixed
-     */
-    public function update(Request $request, $product)
-    {
-        return $this->successResponse($this->productService->updateProduct($product, $request->all()));
-    }
-
-    /**
-     * @param $product
-     *
-     * @return mixed
-     */
-    public function destroy($product)
-    {
-        return $this->successResponse($this->productService->deleteProduct($product));
-    }
+   
 }

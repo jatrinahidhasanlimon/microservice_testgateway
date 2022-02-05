@@ -20,7 +20,7 @@ class AuthenticateAccess
         // return $next($request);
         // dd($request);
         $allowedSecrets = explode(',', env('ALLOWED_SECRETS'));
-            // dd(in_array($request->header('Authorization'), $allowedSecrets));
+        // dd($allowedSecrets);
         if (in_array($request->header('Authorization'), $allowedSecrets)) {
             // dd('here');
             return $next($request);
